@@ -44,5 +44,19 @@ class InsufficientFactsRuleTest(unittest.TestCase):
         self.assertEqual(result, {"route": "Clarify", "priority": None})
 
 
+class ReservationSyncUnauthorizedRuleTest(unittest.TestCase):
+    def test_active_401_routes_to_high_l2(self):
+        result = evaluate_ticket(
+            issue_type="reservation_sync",
+            error_code=401,
+            problem_active=True,
+            affected_bookings=4,
+            next_checkin_hours=12,
+            affected_properties=1,
+        )
+
+        self.assertEqual(result, {"route": "L2", "priority": "High"})
+
+
 if __name__ == "__main__":
     unittest.main()

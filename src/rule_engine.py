@@ -1,15 +1,25 @@
-"""Minimal rule engine prototype for three support cases."""
+"""Minimal rule engine prototype for four support cases."""
 
 
 def evaluate_ticket(
-    affected_properties,
-    issue_type,
+    affected_properties=None,
+    issue_type=None,
     overbooking_risk=None,
     affected_bookings=None,
     other_bookings_working=None,
     claimed_urgency=None,
+    error_code=None,
+    problem_active=None,
+    next_checkin_hours=None,
 ):
     """Return routing for the supported rules."""
+    if (
+        issue_type == "reservation_sync"
+        and error_code == 401
+        and problem_active is True
+    ):
+        return {"route": "L2", "priority": "High"}
+
     if (
         affected_properties is None
         or issue_type is None
