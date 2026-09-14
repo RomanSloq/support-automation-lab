@@ -2,11 +2,24 @@
 
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from pathlib import Path
 
 from src.rule_engine import evaluate_ticket
 
 
 class RouteHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path != "/manual-ai":
+            self.send_error(404)
+            return
+
+        page = Path(__file__).with_name("manual_ai.html").read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(page)))
+        self.end_headers()
+        self.wfile.write(page)
+
     def do_POST(self):
         if self.path not in ("/route", "/webhook/ticket-created"):
             self.send_error(404)

@@ -104,5 +104,26 @@ class TicketCreatedWebhookTest(unittest.TestCase):
         )
 
 
+class ManualAiPageTest(unittest.TestCase):
+    def test_manual_ai_page_is_served(self):
+        server = HTTPServer(("127.0.0.1", 0), RouteHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+            connection.request("GET", "/manual-ai")
+            response = connection.getresponse()
+            page = response.read().decode("utf-8")
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join()
+
+        self.assertEqual(response.status, 200)
+        self.assertIn("Скопировать запрос для ChatGPT", page)
+        self.assertIn("/route", page)
+        self.assertIn('"problem_active" to true only when', page)
+
+
 if __name__ == "__main__":
     unittest.main()

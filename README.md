@@ -4,13 +4,13 @@ Hands-on learning project for exploring support automation workflows with HelpDe
 
 ## Current status
 
-Stage 0 — environment setup.
+Current status: local rule engine, API, ticket-created webhook, and Manual AI Test Harness are implemented and tested.
 
 ## Planned scope
 
-PLANNED — manual HelpDeskEddy configuration practice, documentation, examples, screenshots, and later validation of possible automation approaches.
+PLANNED — manual HelpDeskEddy configuration practice, examples, screenshots, and later validation of possible automation approaches.
 
-Nothing beyond the Stage 0 repository setup is implemented yet.
+The Manual AI Test Harness uses ChatGPT manually for fact extraction; it does not use OpenAI API integration.
 
 ## Honesty note
 

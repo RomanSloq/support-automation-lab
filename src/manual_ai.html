@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Manual AI Test Harness</title>
+</head>
+<body>
+  <h1>Manual AI Test Harness</h1>
+
+  <label for="client-text">Текст клиента</label><br>
+  <textarea id="client-text" rows="8" cols="80"></textarea><br>
+  <button id="copy-prompt">Скопировать запрос для ChatGPT</button>
+
+  <p>Скопируйте prompt в ChatGPT вручную. Затем вставьте только JSON-ответ:</p>
+  <label for="ai-json">Ответ AI (JSON)</label><br>
+  <textarea id="ai-json" rows="10" cols="80"></textarea><br>
+  <button id="check-rule-engine">Проверить через Rule Engine</button>
+
+  <h2>Результат</h2>
+  <pre id="result"></pre>
+
+  <script>
+    const fields = [
+      "affected_properties",
+      "issue_type",
+      "affected_bookings",
+      "other_bookings_working",
+      "overbooking_risk",
+      "error_code",
+      "problem_active",
+      "next_checkin_hours",
+      "claimed_urgency"
+    ];
+
+    function buildPrompt(clientText) {
+      return `Extract only facts explicitly stated in the client message below.
+Do not guess or invent facts. If the client did not provide a fact, return null.
+Set "problem_active" to true only when the message clearly says the problem is ongoing now, false only when it clearly says the problem was resolved, otherwise return null.
+Do not choose route. Do not choose priority. Do not make a business decision.
+Return only valid JSON, with no markdown fences and no explanation before or after it.
+Use exactly these fields: ${fields.join(", ")}.
+For example, do not set "other_bookings_working" to true unless the client explicitly said it.
+
+Client message:
+${clientText}`;
+    }
+
+    document.getElementById("copy-prompt").onclick = async () => {
+      const prompt = buildPrompt(document.getElementById("client-text").value);
+      await navigator.clipboard.writeText(prompt);
+      document.getElementById("result").textContent = "Prompt скопирован.";
+    };
+
+    document.getElementById("check-rule-engine").onclick = async () => {
+      const result = document.getElementById("result");
+      let facts;
+      try {
+        facts = JSON.parse(document.getElementById("ai-json").value);
+      } catch (error) {
+        result.textContent = "Ошибка: ответ AI содержит невалидный JSON.";
+        return;
+      }
+
+      try {
+        const response = await fetch("/route", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(facts)
+        });
+        const decision = await response.json();
+        result.textContent = JSON.stringify(decision, null, 2);
+      } catch (error) {
+        result.textContent = "Ошибка: не удалось обратиться к Rule Engine.";
+      }
+    };
+  </script>
+</body>
+</html>
