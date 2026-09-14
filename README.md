@@ -4,7 +4,7 @@ Hands-on learning project for exploring support automation workflows with HelpDe
 
 ## Current status
 
-Current status: local rule engine, API, ticket-created webhook, and Manual AI Test Harness are implemented and tested.
+Current status: local rule engine, API, ticket-created webhook, Manual AI Test Harness, and E2E verification are implemented and tested.
 
 ## Planned scope
 
