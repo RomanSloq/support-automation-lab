@@ -8,6 +8,9 @@ Current possible routing results are:
 
 - `Incident`
 - `L1`
+- `L2`
 - `Clarify`
 
 When key facts are missing, the engine returns `Clarify` with no priority.
+
+Every result also includes `human_review_required`. It is a safety-gate signal, not an approval workflow or an external action.

@@ -18,7 +18,11 @@ class AvailabilitySyncIncidentRuleTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            {"route": "Incident", "priority": "Critical"},
+            {
+                "route": "Incident",
+                "priority": "Critical",
+                "human_review_required": False,
+            },
         )
 
 
@@ -33,7 +37,11 @@ class ReservationSyncLocalRuleTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            {"route": "L1", "priority": "Normal"},
+            {
+                "route": "L1",
+                "priority": "Normal",
+                "human_review_required": False,
+            },
         )
 
 
@@ -46,7 +54,14 @@ class InsufficientFactsRuleTest(unittest.TestCase):
             claimed_urgency="high",
         )
 
-        self.assertEqual(result, {"route": "Clarify", "priority": None})
+        self.assertEqual(
+            result,
+            {
+                "route": "Clarify",
+                "priority": None,
+                "human_review_required": False,
+            },
+        )
 
 
 class ReservationSyncUnauthorizedRuleTest(unittest.TestCase):
@@ -60,7 +75,44 @@ class ReservationSyncUnauthorizedRuleTest(unittest.TestCase):
             affected_properties=1,
         )
 
-        self.assertEqual(result, {"route": "L2", "priority": "High"})
+        self.assertEqual(
+            result,
+            {
+                "route": "L2",
+                "priority": "High",
+                "human_review_required": False,
+            },
+        )
+
+
+class HumanReviewGateTest(unittest.TestCase):
+    def test_safe_case_does_not_require_human_review(self):
+        result = evaluate_ticket(
+            affected_properties=1,
+            issue_type="reservation_sync",
+            affected_bookings=1,
+            other_bookings_working=True,
+        )
+
+        self.assertFalse(result["human_review_required"])
+
+    def test_suspected_duplicate_requires_human_review(self):
+        result = evaluate_ticket(
+            issue_type="suspected_duplicate_booking",
+            affected_bookings=2,
+            next_checkin_hours=0,
+            problem_active=True,
+            claimed_urgency="high",
+        )
+
+        self.assertEqual(
+            result,
+            {
+                "route": "L2",
+                "priority": "High",
+                "human_review_required": True,
+            },
+        )
 
 
 class TicketCreatedWebhookTest(unittest.TestCase):
@@ -99,7 +151,11 @@ class TicketCreatedWebhookTest(unittest.TestCase):
             {
                 "received": True,
                 "ticket_id": "T-100",
-                "decision": {"route": "L1", "priority": "Normal"},
+                "decision": {
+                    "route": "L1",
+                    "priority": "Normal",
+                    "human_review_required": False,
+                },
             },
         )
 

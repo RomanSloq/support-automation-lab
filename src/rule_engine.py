@@ -1,4 +1,4 @@
-"""Minimal rule engine prototype for four support cases."""
+"""Minimal rule engine prototype with a human-review gate."""
 
 
 def evaluate_ticket(
@@ -14,11 +14,27 @@ def evaluate_ticket(
 ):
     """Return routing for the supported rules."""
     if (
+        issue_type == "suspected_duplicate_booking"
+        and affected_bookings is not None
+        and next_checkin_hours == 0
+        and problem_active is True
+    ):
+        return {
+            "route": "L2",
+            "priority": "High",
+            "human_review_required": True,
+        }
+
+    if (
         issue_type == "reservation_sync"
         and error_code == 401
         and problem_active is True
     ):
-        return {"route": "L2", "priority": "High"}
+        return {
+            "route": "L2",
+            "priority": "High",
+            "human_review_required": False,
+        }
 
     if (
         affected_properties is None
@@ -35,14 +51,22 @@ def evaluate_ticket(
             )
         )
     ):
-        return {"route": "Clarify", "priority": None}
+        return {
+            "route": "Clarify",
+            "priority": None,
+            "human_review_required": False,
+        }
 
     if (
         affected_properties >= 2
         and issue_type == "availability_sync"
         and overbooking_risk is True
     ):
-        return {"route": "Incident", "priority": "Critical"}
+        return {
+            "route": "Incident",
+            "priority": "Critical",
+            "human_review_required": False,
+        }
 
     if (
         affected_properties == 1
@@ -50,9 +74,17 @@ def evaluate_ticket(
         and affected_bookings == 1
         and other_bookings_working is True
     ):
-        return {"route": "L1", "priority": "Normal"}
+        return {
+            "route": "L1",
+            "priority": "Normal",
+            "human_review_required": False,
+        }
 
-    return {"route": "Unmatched", "priority": "Normal"}
+    return {
+        "route": "Unmatched",
+        "priority": "Normal",
+        "human_review_required": False,
+    }
 
 
 if __name__ == "__main__":
