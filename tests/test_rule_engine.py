@@ -1,5 +1,10 @@
+import http.client
+import json
+import threading
 import unittest
+from http.server import HTTPServer
 
+from src.api import RouteHandler
 from src.rule_engine import evaluate_ticket
 
 
@@ -56,6 +61,47 @@ class ReservationSyncUnauthorizedRuleTest(unittest.TestCase):
         )
 
         self.assertEqual(result, {"route": "L2", "priority": "High"})
+
+
+class TicketCreatedWebhookTest(unittest.TestCase):
+    def test_ticket_created_event_returns_engine_decision(self):
+        server = HTTPServer(("127.0.0.1", 0), RouteHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            connection = http.client.HTTPConnection("127.0.0.1", server.server_port)
+            event = {
+                "event": "ticket.created",
+                "ticket": {
+                    "id": "T-100",
+                    "affected_properties": 1,
+                    "issue_type": "reservation_sync",
+                    "affected_bookings": 1,
+                    "other_bookings_working": True,
+                },
+            }
+            connection.request(
+                "POST",
+                "/webhook/ticket-created",
+                body=json.dumps(event),
+                headers={"Content-Type": "application/json"},
+            )
+            response = connection.getresponse()
+            result = json.loads(response.read())
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join()
+
+        self.assertEqual(response.status, 200)
+        self.assertEqual(
+            result,
+            {
+                "received": True,
+                "ticket_id": "T-100",
+                "decision": {"route": "L1", "priority": "Normal"},
+            },
+        )
 
 
 if __name__ == "__main__":
