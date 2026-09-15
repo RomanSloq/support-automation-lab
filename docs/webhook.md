@@ -1,11 +1,11 @@
-# Ticket-created webhook
+# Webhook ticket.created
 
-The local server exposes one webhook receiver:
+Локальный сервер предоставляет один webhook receiver:
 
 ```text
 POST http://127.0.0.1:8000/webhook/ticket-created
 ```
 
-It accepts an event with `event = "ticket.created"` and a nested `ticket` object. The webhook extracts the ticket facts and passes them to the existing `rule_engine.py`. It contains no routing rules of its own.
+Он принимает событие с `event = "ticket.created"` и вложенным объектом `ticket`. Webhook извлекает факты ticket и передаёт их существующему `rule_engine.py`. Собственных routing rules в webhook-коде нет.
 
-Postman is used here as an imitation of an external HelpDesk system. In a real integration, the HelpDesk would send this event automatically when a ticket is created. This project does not yet claim to have a real HelpDesk integration.
+Postman здесь имитирует внешнюю HelpDesk-систему. В реальной интеграции событие автоматически отправляла бы сама HelpDesk при создании тикета. Проект не утверждает, что такая реальная HelpDesk-интеграция уже подключена.

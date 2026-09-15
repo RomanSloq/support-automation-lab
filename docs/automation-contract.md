@@ -1,14 +1,14 @@
 # Automation contract
 
-The rule engine receives structured ticket facts. Unknown facts remain unknown; the system does not invent them.
+Rule engine получает структурированные факты тикета. Если факт неизвестен, он остаётся неизвестным: система его не придумывает.
 
-The fact fields are `affected_properties`, `issue_type`, `affected_bookings`, `other_bookings_working`, `overbooking_risk`, `error_code`, `problem_active`, `next_checkin_hours`, and `claimed_urgency`. Supported normalized issue types are `availability_sync`, `reservation_sync`, and `suspected_duplicate_booking`.
+Поля фактов: `affected_properties`, `issue_type`, `affected_bookings`, `other_bookings_working`, `overbooking_risk`, `error_code`, `problem_active`, `next_checkin_hours` и `claimed_urgency`. Поддерживаемые нормализованные типы: `availability_sync`, `reservation_sync` и `suspected_duplicate_booking`.
 
-`claimed_urgency` is a separate customer statement. It does not determine the actual priority by itself.
+`claimed_urgency` — отдельное заявление клиента. Само по себе оно не определяет фактический priority.
 
-In this MVP, `overbooking_risk=true` may represent a risk explicitly reported by the customer; it is not proof that an external system independently verified the risk.
+В этом MVP `overbooking_risk=true` может означать риск, явно заявленный клиентом; это не доказательство независимой проверки внешней системой.
 
-Current possible routing results are:
+Текущие возможные результаты маршрутизации:
 
 - `Incident`
 - `L1`
@@ -16,8 +16,6 @@ Current possible routing results are:
 - `Clarify`
 - `Unmatched`
 
-When key facts are missing, the engine returns `Clarify` with no priority.
+При нехватке ключевых фактов engine возвращает `Clarify` без priority. `Unmatched` означает, что факты валидны и достаточно полны, но ни одно реализованное правило не подошло; текущий default назначает `Normal` и не является общей проверенной бизнес-политикой.
 
-`Unmatched` means the supplied facts are valid and sufficiently present, but none of the currently implemented rules match. The current fallback assigns `Normal`; this is not the same as missing facts and should not be presented as a broadly validated business policy.
-
-Every result also includes `human_review_required`. It is a safety-gate signal, not an approval workflow or an external action.
+Каждый результат также содержит `human_review_required`. Это safety gate-сигнал, а не approval workflow и не внешнее действие.

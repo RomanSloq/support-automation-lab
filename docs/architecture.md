@@ -1,30 +1,28 @@
-# Architecture
+# Архитектура
 
 ```mermaid
 flowchart TD
-    A[Input facts or ticket.created event] --> B[Local API / webhook]
-    B --> C[Structured ticket facts]
-    C --> D[Deterministic rule engine]
-    D --> E[Route and priority]
+    A[Факты или событие ticket.created] --> B[Локальный API / webhook]
+    B --> C[Структурированные факты тикета]
+    C --> D[Детерминированный rule engine]
+    D --> E[Route и priority]
     D --> F[human_review_required]
-
-    G[Raw client text] --> H[OpenAI Responses API]
-    H --> I[Strict Structured Outputs]
+    G[Исходный текст клиента] --> H[OpenAI Responses API]
+    H --> I[Structured Outputs]
     I --> C
-
     G --> J[Manual AI Test Harness]
-    J --> K[ChatGPT used manually]
+    J --> K[Ручной ChatGPT]
     K --> C
 ```
 
-## Components
+## Компоненты
 
-1. **Inputs** — `POST /route` accepts structured facts; `POST /webhook/ticket-created` extracts a nested ticket from a local event.
-2. **Automated AI extraction** — `POST /ai/route` uses the OpenAI Responses API and strict Structured Outputs to extract and normalize facts. It does not choose the decision.
-3. **Manual AI fallback** — the local harness copies a prompt. The user manually exchanges it with ChatGPT and pastes facts JSON back.
-4. **API/webhook layer** — passes structured facts to the rule engine and returns JSON. It does not contain routing policy.
-5. **Rule engine** — applies deterministic routing rules and returns `route`, `priority`, and `human_review_required`.
-6. **Human review gate** — flags risky automated actions for a person; it is not an approval workflow and performs no action.
-7. **Outputs** — JSON facts plus decisions for local callers.
+1. **Входы** — `POST /route` принимает структурированные факты, а `POST /webhook/ticket-created` достаёт вложенный ticket из локального события.
+2. **Автоматическое AI extraction** — `POST /ai/route` использует OpenAI Responses API и Structured Outputs для извлечения и нормализации фактов. Решение он не выбирает.
+3. **Ручной AI fallback** — локальный harness формирует prompt; пользователь вручную обменивается им с ChatGPT и вставляет JSON фактов.
+4. **API/webhook-слой** — передаёт структурированные факты в rule engine и возвращает JSON. Политики маршрутизации здесь нет.
+5. **Rule engine** — применяет детерминированные правила и возвращает `route`, `priority` и `human_review_required`.
+6. **Human review gate** — отмечает рискованные автоматические действия для человека; это не approval workflow и никаких действий не выполняет.
+7. **Результат** — JSON с фактами и решением для локального клиента.
 
-In plain language: AI interprets and normalizes unstructured text, the rule engine applies policy, and human review prevents unsafe automated actions. This is a localhost MVP in a fictional StayFlow support domain: no real HelpDesk integration, production data, database, deployment, approval workflow, or destructive booking action exists.
+Простыми словами: AI понимает и нормализует текст, rule engine применяет политику, а human review предотвращает небезопасные автоматические действия. Это localhost MVP в вымышленном домене StayFlow: реальной HelpDesk-интеграции, production data, базы, deployment, approval workflow и destructive booking actions нет.

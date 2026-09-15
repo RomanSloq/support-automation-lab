@@ -1,26 +1,26 @@
-# Testing
+# Тестирование
 
-## Automated suite
+## Автоматический набор
 
-The current automated test suite includes HTTP E2E checks, negative request validation, and mocked OpenAI integration. It also verifies prompt boundaries for unsupported rate-plan text, immediate check-in normalization, usage mapping, and a synthetic Luna cost estimate.
+Текущий набор проверяет HTTP E2E-потоки, отрицательную валидацию запросов и замокированную OpenAI-интеграцию. Также проверяются границы prompt для неподдерживаемого rate-plan текста, нормализация немедленного заселения, usage, оценка стоимости и human-review gate.
 
-| Scenario | Expected result | Actual result |
+| Сценарий | Ожидаемый результат | Фактический результат |
 | --- | --- | --- |
-| Mass availability issue | `Incident` / `Critical` | PASS |
-| One local reservation issue | `L1` / `Normal` | PASS |
-| Missing facts with `claimed_urgency = "high"` | `Clarify` / no priority | PASS |
-| Active reservation sync with error `401` | `L2` / `High` | PASS |
-| Safe case review flag | `human_review_required = false` | PASS |
-| Suspected duplicate review flag | `L2` / `High` / `true` | PASS |
+| Массовая availability-проблема | `Incident` / `Critical` | PASS |
+| Одна локальная reservation-проблема | `L1` / `Normal` | PASS |
+| Недостаточно фактов при `claimed_urgency = "high"` | `Clarify` / priority не назначается | PASS |
+| Активная reservation sync с ошибкой `401` | `L2` / `High` | PASS |
+| Безопасный сценарий | `human_review_required = false` | PASS |
+| Подозрение на duplicate | `L2` / `High` / `true` | PASS |
 
-Full test run: **23/23 PASS, 0 errors**. This confirms the encoded cases only; it is not a claim of 100% real-world accuracy. The ordinary suite makes no paid OpenAI calls.
+Полный запуск: **23/23 PASS, 0 ошибок**. Это подтверждает закодированные сценарии, но не означает 100% accuracy в реальном мире. Обычный набор не делает платных OpenAI-вызовов.
 
-## Live model evaluation
+## Live evaluation модели
 
-The first real GPT-5.6 Luna evaluation passed 4/6 and revealed two extraction boundaries: closest-match classification of an unsupported rate-plan issue and missing zero-hour normalization for immediate check-in. After prompt refinement, the repeated evaluation passed **6/6**.
+Первая реальная оценка GPT-5.6 Luna прошла 4/6 и выявила две границы extraction. После доработки prompt повторная оценка прошла **6/6**.
 
-Measured repeated-run usage: 2,741 input tokens, 396 output tokens, 3,137 total tokens, and $0.0010234 estimated total cost (about $0.0001706 per case). Six cases are a small regression set, not statistically meaningful accuracy or a production cost forecast.
+Шесть случаев — небольшое регрессионное множество, а не статистически значимая оценка accuracy или production-прогноз стоимости.
 
-## Manual verification
+## Ручная проверка
 
-Postman independently verified two real `/ai/route` flows with HTTP `200`: mass availability → `Incident` / `Critical`, and one missing Booking reservation with unknown current state → `Clarify` / no priority. Earlier structured `/route`, webhook, and manual-harness checks remain separate evidence.
+Postman отдельно подтвердил два реальных потока `/ai/route` с HTTP `200`: массовая availability-проблема → `Incident` / `Critical`, одна бронь с неизвестным текущим состоянием → `Clarify` / без priority. Более ранние проверки `/route`, webhook и manual harness являются отдельными свидетельствами.

@@ -1,56 +1,54 @@
 # Support Automation Lab
 
-A local learning MVP for routing hotel-support tickets in a fictional StayFlow domain. It uses OpenAI to extract and normalize structured facts from raw text, then applies deterministic rules for route, priority, and a human-review safety signal. A manual ChatGPT harness remains available as an educational fallback.
+Локальный учебный MVP для маршрутизации тикетов гостиничной поддержки в вымышленном домене StayFlow. OpenAI извлекает и нормализует структурированные факты из текста, после чего детерминированные правила определяют `route`, `priority` и сигнал проверки человеком.
 
-Built with AI-assisted development, with manual verification of behavior, API flows, and test results.
+Проект разработан с AI-assisted development, но поведение, API-потоки и результаты тестов проверены вручную и автоматически.
 
-## Problem
+## Проблема
 
-Support tickets can arrive with incomplete, emotional, or unstructured information. This MVP separates understanding the ticket from making a business decision: unknown facts stay unknown, and routing follows explicit rules.
+Тикеты поддержки часто приходят неполными, эмоциональными или неструктурированными. MVP разделяет понимание тикета и бизнес-решение: неизвестные факты остаются неизвестными, а маршрутизация следует явным правилам.
 
-## What the system does
+## Что делает система
 
 ```text
-incoming ticket/event → fact extraction → structured facts → deterministic rules
-→ route / priority → human review when required
+входящий тикет/событие → извлечение фактов → структурированные факты → детерминированные правила
+→ route / priority → проверка человеком, если это требуется
 ```
 
-AI interprets and normalizes unstructured text into the automation contract. The deterministic rule engine applies routing policy. The human-review gate signals when a risky automated action would need a person.
+AI выполняет extraction + normalization — извлечение и нормализацию фактов из неструктурированного текста. Движок правил применяет политику маршрутизации. Human-in-the-loop — сигнал обязательной проверки человеком для рискованных действий.
 
-## Architecture
+## Архитектура
 
 ```mermaid
 flowchart TD
-    A[External system or Postman] --> B[Local API or webhook]
-    B --> C[Structured ticket facts]
-    C --> D[Deterministic rule engine]
-    D --> E[Route and priority]
-    D --> F[Human review gate]
-
-    G[Raw client text] --> H[OpenAI Responses API]
-    H --> I[Strict Structured Outputs]
+    A[Внешняя система или Postman] --> B[Локальный API или webhook]
+    B --> C[Структурированные факты тикета]
+    C --> D[Детерминированный rule engine]
+    D --> E[Route и priority]
+    D --> F[Проверка человеком]
+    G[Исходный текст клиента] --> H[OpenAI Responses API]
+    H --> I[Structured Outputs]
     I --> C
-
     G --> J[Manual AI Test Harness]
-    J --> K[ChatGPT used manually]
+    J --> K[Ручной ChatGPT]
     K --> C
 ```
 
-The automated path uses `gpt-5.6-luna` by default through the Responses API with strict Structured Outputs and `store=false`. The manual path remains copy/paste. See [architecture notes](docs/architecture.md), [AI integration](docs/ai-integration.md), [manual AI fallback](docs/manual-ai.md), and [E2E verification](docs/end-to-end.md).
+Автоматический путь по умолчанию использует `gpt-5.6-luna`, Responses API, строгий Structured Outputs и `store=false`. Ручной путь работает через copy/paste. Подробнее: [архитектура](docs/architecture.md), [AI-интеграция](docs/ai-integration.md), [ручной AI harness](docs/manual-ai.md) и [E2E-проверка](docs/end-to-end.md).
 
-## Implemented
+## Что реализовано
 
-- Deterministic support routing rules.
-- Local HTTP API: `POST /route`.
-- Automated AI routing: `POST /ai/route`.
-- Local `ticket.created` webhook receiver.
-- Manual AI extraction harness: `GET /manual-ai`.
-- `human_review_required` safety gate for risky decisions.
-- Unit, API, webhook, and end-to-end verification tests.
+- Детерминированные правила маршрутизации поддержки.
+- Локальный HTTP API: `POST /route`.
+- Автоматическое AI извлечение фактов: `POST /ai/route`.
+- Локальный webhook для события `ticket.created`.
+- Ручной AI Test Harness: `GET /manual-ai`.
+- Safety gate `human_review_required` для рискованных решений.
+- Unit-, API-, webhook- и end-to-end-тесты.
 
-## Example
+## Пример
 
-Three affected hotels with an availability-sync issue and overbooking risk return:
+Три затронутых отеля, проблема availability sync и риск overbooking дают:
 
 ```json
 {
@@ -60,50 +58,48 @@ Three affected hotels with an availability-sync issue and overbooking risk retur
 }
 ```
 
-A suspected duplicate booking with immediate check-in returns `L2` / `High` and `human_review_required: true`; it does not trigger any booking action.
+Подозрение на duplicate booking при заселении сейчас даёт `L2` / `High` и `human_review_required: true`; никаких действий с бронированием это не запускает.
 
-## Testing
+## Тестирование
 
-The automated suite has **23/23 PASS**. It covers routing, API validation, webhook flow, mocked OpenAI integration, manual-page availability, the human-review gate, and E2E HTTP flows.
+Автоматический набор: **23/23 PASS**. Он покрывает правила, валидацию API, webhook, замокоренную OpenAI-интеграцию, доступность ручной страницы, human-review gate и E2E HTTP-потоки.
 
-A separate real GPT-5.6 Luna evaluation passed **6/6** after prompt refinement fixed two observed extraction boundaries: an unsupported rate-plan issue was initially forced into the closest category, and immediate check-in was initially left without `next_checkin_hours = 0`. The six live calls used 3,137 tokens and had a measured estimated cost of about **$0.0010234 total** (**$0.0001706 per case**). This small set is regression evidence, not a production accuracy or cost forecast.
+Отдельная небольшая реальная проверка GPT-5.6 Luna прошла **6/6** после исправления двух границ extraction. Это небольшое тестовое множество, а не показатель production accuracy или прогноз стоимости.
 
-## Run locally
+## Как запустить локально
 
 ```powershell
 cd support-automation-lab
 py -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-# Set OPENAI_API_KEY in your local shell before starting; never place it in the repository.
+# Задайте OPENAI_API_KEY в локальном окружении; никогда не помещайте ключ в репозиторий.
 .\.venv\Scripts\python.exe -m src.api
 ```
 
-`OPENAI_MODEL` is optional and defaults to `gpt-5.6-luna`. Keys are read from environment variables and are not stored in the repository.
+`OPENAI_MODEL` необязателен и по умолчанию равен `gpt-5.6-luna`. Ключи читаются из переменных окружения и не хранятся в репозитории.
 
-Successful `POST /ai/route` responses include top-level OpenAI token usage and `estimated_cost_usd`, separate from facts and routing. The estimate uses documented current Luna pricing and is not an invoice.
-
-Available local endpoints:
+Доступные локальные endpoints:
 
 - `POST http://127.0.0.1:8000/route`
 - `POST http://127.0.0.1:8000/ai/route`
 - `POST http://127.0.0.1:8000/webhook/ticket-created`
 - `GET http://127.0.0.1:8000/manual-ai`
 
-## Current limitations
+## Ограничения текущего MVP
 
-- The OpenAI path requires a valid local `OPENAI_API_KEY`; the manual harness is the fallback.
-- No real HelpDesk integration or production data.
-- The HTTP server is localhost/demo-only, with no database, authentication, or deployment.
-- The webhook has no production signature verification, idempotency, or retry layer.
-- No approval workflow or automatic destructive actions.
-- The project does not delete, merge, cancel, or edit bookings in external systems.
+- OpenAI-путь требует локального `OPENAI_API_KEY`; ручной harness остаётся запасным вариантом.
+- Нет реальной HelpDesk-интеграции и production data.
+- HTTP-сервер предназначен только для localhost/demo: нет базы данных, авторизации и production deployment.
+- У webhook нет production-проверки подписи, идемпотентности и слоя повторных попыток.
+- Approval workflow и автоматические destructive actions не реализованы.
+- Проект не удаляет, не объединяет, не отменяет и не изменяет бронирования во внешних системах.
 
-## What I actually built
+## Что именно я реализовал
 
-- Designed the automation contract and deterministic routing logic.
-- Built and tested the local API and webhook flow with AI-assisted development.
-- Built a manual AI fact-extraction harness.
-- Added automated extraction and normalization with the OpenAI Responses API and strict Structured Outputs.
-- Added a human-review safety gate.
-- Created automated and E2E tests.
-- Documented the architecture, verification, and MVP limitations.
+- Спроектировал automation contract и детерминированную логику маршрутизации.
+- Создал и протестировал локальные API- и webhook-потоки.
+- Создал ручной AI harness для извлечения фактов.
+- Добавил extraction и normalization через OpenAI Responses API и строгий Structured Outputs.
+- Добавил human-review safety gate.
+- Создал автоматические и E2E-тесты.
+- Описал архитектуру, проверки и ограничения MVP.

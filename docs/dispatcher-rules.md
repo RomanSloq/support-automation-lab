@@ -1,15 +1,15 @@
 # Dispatcher rules
 
-These are the only rules implemented at the current milestone:
+На текущем milestone реализованы только эти правила:
 
-1. At least 2 affected properties, `availability_sync`, and overbooking risk → `Incident` / `Critical`.
-2. Exactly 1 affected property, `reservation_sync`, 1 affected booking, and other bookings working → `L1` / `Normal`.
-3. Missing key facts → `Clarify` / priority not assigned.
-4. Active `reservation_sync` with error code `401` → `L2` / `High`.
-5. Active `suspected_duplicate_booking` affecting bookings with check-in now → `L2` / `High` / human review required.
+1. Не менее 2 затронутых properties, `availability_sync` и риск overbooking → `Incident` / `Critical`.
+2. Ровно 1 затронутая property, `reservation_sync`, 1 affected booking и остальные бронирования работают → `L1` / `Normal`.
+3. Недостаточно ключевых фактов → `Clarify` / priority не назначается.
+4. Активная `reservation_sync` с error code `401` → `L2` / `High`.
+5. Активный `suspected_duplicate_booking` с затронутыми бронированиями и заселением сейчас → `L2` / `High` / human review required.
 
-The two technical/safety-sensitive L2 rules are evaluated before the missing-facts fallback. Valid facts that match none of these rules return the current default `Unmatched` / `Normal`; this default has not been validated as a general routing policy.
+Два технических/safety-sensitive правила уровня L2 проверяются до fallback по недостающим фактам. Валидные факты, которые не подходят ни под одно правило, дают текущий default `Unmatched` / `Normal`; этот default не подтверждён как общая политика маршрутизации.
 
-The current duplicate condition requires `affected_bookings` to be known, but does not enforce a minimum of two. Only the tested two-booking scenario is confirmed; changing that threshold requires a separate business decision.
+Для duplicate condition `affected_bookings` должен быть известен, но минимальное количество не задаётся. Подтверждён только тестовый сценарий с двумя бронированиями; изменение порога требует отдельного бизнес-решения.
 
-Other support scenarios are planned, but are not implemented yet.
+Остальные сценарии поддержки запланированы, но пока не реализованы.

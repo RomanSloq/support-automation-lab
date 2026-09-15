@@ -1,15 +1,13 @@
 # Manual AI Test Harness
 
-The harness is a manual fallback and learning tool for testing the boundary between AI extraction/normalization and deterministic routing.
-
-Flow:
+Manual AI Test Harness — ручной fallback и учебный инструмент для проверки границы между AI extraction/normalization и детерминированной маршрутизацией.
 
 ```text
-client text → copied prompt → manual ChatGPT → facts JSON → POST /route → rule_engine.py → decision
+текст клиента → скопированный prompt → ручной ChatGPT → JSON фактов → POST /route → rule_engine.py → решение
 ```
 
-ChatGPT is used manually to extract and normalize explicit meaning into the automation contract. The page asks it to use `null` for unknown facts and never choose `route` or `priority`. The deterministic `rule_engine.py` makes the business decision.
+ChatGPT вручную извлекает и нормализует явно выраженный смысл в automation contract. Страница требует использовать `null` для неизвестных фактов и не выбирать `route` или `priority`. Бизнес-решение принимает детерминированный `rule_engine.py`.
 
-Manual copy/paste remains available when the automated OpenAI path is not used. It does not call the OpenAI API or spend OpenAI credits itself; after facts are pasted, it does call the local `/route` endpoint.
+Ручной copy/paste нужен как учебный integration seam, когда автоматический OpenAI-путь не используется. Сам harness не вызывает OpenAI API и не расходует кредиты; после вставки фактов он обращается только к локальному `/route`.
 
-During testing, the message `Одна бронь Booking не появилась в PMS.` exposed an extraction defect: `problem_active` was incorrectly set to `true` even though the message did not say the problem was still active. The prompt now requires `true` only for an explicitly ongoing problem, `false` only for an explicitly resolved problem, and `null` when the current state is unknown. The corrected facts route to `Clarify` with no priority.
+Во время проверки сообщение `Одна бронь Booking не появилась в PMS.` выявило defect extraction: `problem_active` ошибочно стал `true`, хотя сообщение не говорило, что проблема продолжается. Prompt был усилен: `true` — только при явном текущем состоянии, `false` — только при явном устранении, иначе `null`. Исправленные факты дают `Clarify` без priority.
