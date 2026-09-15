@@ -71,10 +71,10 @@ A separate real GPT-5.6 Luna evaluation passed **6/6** after prompt refinement f
 ## Run locally
 
 ```powershell
-cd D:\Studio\Projects\SupportAutomationLab\support-automation-lab
+cd support-automation-lab
 py -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-$env:OPENAI_API_KEY = "<set locally>"
+# Set OPENAI_API_KEY in your local shell before starting; never place it in the repository.
 .\.venv\Scripts\python.exe -m src.api
 ```
 
