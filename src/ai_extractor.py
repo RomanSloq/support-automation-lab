@@ -28,8 +28,12 @@ Use a supported issue_type only when the message clearly matches that category; 
 closest match. availability_sync means availability, inventory, or free-room data is being
 updated or synchronized between systems or channels. Access to, viewing of, or a generic problem
 with a rate plan is not availability_sync; use null when no supported category clearly matches.
-Set problem_active to true only when the message clearly says the problem is ongoing now,
-false only when it clearly says the problem is resolved, otherwise null.
+Set problem_active to true when the message explicitly describes a problem or inability in the
+present/current state, including wording such as "сейчас не работает", "сейчас не могу...",
+"прямо сейчас...", or "получаем ошибку сейчас". Do not require the word "ongoing" when present-
+tense wording clearly establishes that the problem is happening now. Set it to false only when
+the message explicitly says the problem was resolved, stopped, or is no longer observed;
+otherwise return null. A past event without a clear current-state signal remains null.
 Set next_checkin_hours to 0 only when check-in or guest arrival is explicitly happening now,
 right now, or immediately. Normalize an explicit "in N hours" statement to N. "Today" alone
 does not establish 0; otherwise use null.

@@ -65,8 +65,18 @@ class AIExtractorTest(unittest.TestCase):
         self.assertFalse(call["text"]["format"]["schema"]["additionalProperties"])
         self.assertIn("never choose a\nclosest match", EXTRACTION_INSTRUCTIONS)
         self.assertIn("generic problem\nwith a rate plan is not availability_sync", EXTRACTION_INSTRUCTIONS)
+        self.assertIn('"сейчас не могу..."', EXTRACTION_INSTRUCTIONS)
+        self.assertIn('explicitly says the problem was resolved, stopped, or is no longer observed', EXTRACTION_INSTRUCTIONS)
+        self.assertIn('A past event without a clear current-state signal remains null', EXTRACTION_INSTRUCTIONS)
         self.assertIn("right now, or immediately", EXTRACTION_INSTRUCTIONS)
         self.assertIn('"Today" alone\ndoes not establish 0', EXTRACTION_INSTRUCTIONS)
+
+    def test_problem_active_prompt_boundary_is_general(self):
+        self.assertIn("present/current state", EXTRACTION_INSTRUCTIONS)
+        self.assertIn('"сейчас не работает"', EXTRACTION_INSTRUCTIONS)
+        self.assertIn('"прямо сейчас..."', EXTRACTION_INSTRUCTIONS)
+        self.assertIn('"получаем ошибку сейчас"', EXTRACTION_INSTRUCTIONS)
+        self.assertIn("otherwise return null", EXTRACTION_INSTRUCTIONS)
 
     def test_usage_metadata_and_luna_cost_estimate(self):
         response = SimpleNamespace(

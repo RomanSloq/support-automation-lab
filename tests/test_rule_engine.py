@@ -178,7 +178,8 @@ class ManualAiPageTest(unittest.TestCase):
         self.assertEqual(response.status, 200)
         self.assertIn("Скопировать запрос для ChatGPT", page)
         self.assertIn("/route", page)
-        self.assertIn('"problem_active" to true only when', page)
+        self.assertIn('"problem_active" to true when', page)
+        self.assertIn('A past event without a clear current-state signal remains null', page)
 
 
 if __name__ == "__main__":
