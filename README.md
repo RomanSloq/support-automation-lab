@@ -34,6 +34,10 @@ flowchart TD
     K --> C
 ```
 
+![Архитектура Support Automation Lab](screenshots/01_architecture.png)
+
+**Архитектура системы.** AI извлекает и нормализует факты из неструктурированного текста, после чего детерминированный rule engine определяет `route` и `priority`. Для потенциально рискованных действий предусмотрен human-review safety gate.
+
 Автоматический путь по умолчанию использует `gpt-5.6-luna`, Responses API, строгий Structured Outputs и `store=false`. Ручной путь работает через copy/paste. Подробнее: [архитектура](docs/architecture.md), [AI-интеграция](docs/ai-integration.md), [ручной AI harness](docs/manual-ai.md) и [E2E-проверка](docs/end-to-end.md).
 
 ## Что реализовано
@@ -58,13 +62,21 @@ flowchart TD
 }
 ```
 
+![Реальный AI E2E-сценарий](screenshots/02_real_ai_e2e.png)
+
+**Реальный AI E2E-сценарий.** Исходный текст клиента отправляется через `/ai/route` в OpenAI Responses API. Модель возвращает структурированные факты, после чего deterministic rule engine независимо определяет маршрут и приоритет. В ответе также отображаются token usage и ориентировочная стоимость AI-вызова.
+
 Подозрение на duplicate booking при заселении сейчас даёт `L2` / `High` и `human_review_required: true`; никаких действий с бронированием это не запускает.
+
+![Human-in-the-loop для рискованного сценария](screenshots/03_human_in_the_loop.png)
+
+**Human-in-the-loop.** Подозрение на дублирование бронирований можно автоматически классифицировать как `L2 / High`, но система выставляет `human_review_required=true`: потенциально рискованное действие не должно выполняться без проверки человеком.
 
 ## Тестирование
 
-Автоматический набор: **23/23 PASS**. Он покрывает правила, валидацию API, webhook, замокоренную OpenAI-интеграцию, доступность ручной страницы, human-review gate и E2E HTTP-потоки.
+Автоматический набор: **24/24 PASS**. Он покрывает правила, валидацию API, webhook, замокоренную OpenAI-интеграцию, доступность ручной страницы, human-review gate и E2E HTTP-потоки.
 
-Отдельная небольшая реальная проверка GPT-5.6 Luna прошла **6/6** после исправления двух границ extraction. Это небольшое тестовое множество, а не показатель production accuracy или прогноз стоимости.
+Live evaluation: 6/6 сценариев в двух последовательных прогонах после последнего prompt refinement; подробности, usage и ограничения — в [AI integration](docs/ai-integration.md). Это небольшой regression-набор, а не показатель production accuracy или прогноз стоимости.
 
 ## Как запустить локально
 
